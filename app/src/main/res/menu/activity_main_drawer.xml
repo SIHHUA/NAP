@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/username"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/Edit_username" />
+        <item
+            android:id="@+id/trainingDiary"
+            android:icon="@drawable/ic_library_books_black_24dp"
+            android:title="@string/training_diary" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_people_outline_black_24dp"
+            android:title="@string/logout" />
+    </group>
+
+</menu>

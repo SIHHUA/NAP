@@ -1,0 +1,107 @@
+[33mcommit b97f7804a00f2d05415f8fca01e194be6c1dbc25[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Author: betty_wu <betty_wu@gss.com>
+Date:   Mon Nov 25 02:57:52 2019 +0800
+
+    english complete
+
+[33mcommit 53586b87caca0b52992cc349f08341c239878f94[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: betty_wu <betty_wu@gss.com>
+Date:   Mon Nov 25 00:58:30 2019 +0800
+
+    nft function & interface finish
+
+[33mcommit 23bc93a075ddf801928c58c77f979b6e6f7aa8cd[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Sat Nov 23 21:58:27 2019 +0800
+
+    accout finish,thread in progress
+
+[33mcommit 4f5e19eb2755fea658c75d5232f545b69311c449[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Sat Nov 23 00:22:09 2019 +0800
+
+    sqlite in progress_v2
+
+[33mcommit 9885d9a7ad246f5f8c8329765f02afe8f9cdff87[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Fri Nov 22 17:16:52 2019 +0800
+
+    database in progress,connect finish
+
+[33mcommit dac538a64439467620913fd0d14b103eef4d7cda[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Fri Nov 22 14:13:35 2019 +0800
+
+    create database in progress
+
+[33mcommit 318f53837544b36a2b107088ae78f08908efb559[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Thu Nov 21 18:24:42 2019 +0800
+
+    sqlite in progress
+
+[33mcommit afc8d95a0f30498666990200fd656e60ecad2971[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Wed Nov 20 17:52:48 2019 +0800
+
+    ble send & receive finish
+
+[33mcommit 5951421cec82a8a22862946ef370e01b674e2a18[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Tue Nov 19 18:01:58 2019 +0800
+
+    bar finish,auto not yet
+
+[33mcommit ebf72168f18b5e956551f0691ceb4f3c19fd15ea[m
+Author: betty_wu <betty_wu@gss.com>
+Date:   Tue Nov 19 02:47:37 2019 +0800
+
+    transfer data to phone & bar chart done, send data to device not yet
+
+[33mcommit 4381899519f59649c6bba4344f21e905a9dabe83[m
+Author: Liu Yong Song <a15964852@gmail.com>
+Date:   Tue Nov 12 17:22:25 2019 +0800
+
+    clock finish, sound yet
+
+[33mcommit c7b4c984a25af3cc64ec40a9e9b7af4b5fde6db0[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Mon Nov 11 21:54:10 2019 +0800
+
+    alarm work in progress, will use the service to handle
+
+[33mcommit efba8a63a651dee166dcdfc974ae570e021421fe[m
+Author: betty_wu <betty_wu@gss.com>
+Date:   Mon Nov 11 08:28:20 2019 +0800
+
+    textlock didn't get the correct value
+
+[33mcommit 08fba13be12d5870c32fc4be9e145e8f6acaf378[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Sun Nov 10 18:50:32 2019 +0800
+
+    modify interface, alarmclock in progress
+
+[33mcommit 64b43a8acb58ac0981be6a534e109a4e333430e8[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Sat Nov 9 22:39:05 2019 +0800
+
+    BLE connect finish, transfer data work in progress
+
+[33mcommit 4d20c03a67ad45f408fae9a8d27a2cd235c3feaa[m
+Author: Liu Yong Song <a15964852@gmail.com>
+Date:   Fri Nov 8 15:56:00 2019 +0800
+
+    search BLE address finish
+
+[33mcommit d4e03a7a93dedb7e749881dea36283455acd22a8[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Thu Nov 7 21:11:32 2019 +0800
+
+    sidebar finish, BLE work in progress
+
+[33mcommit 97b6df1905f7406c8563daff22ad445d0682cd12[m
+Author: SIHHUA <103316224@gms.tcu.edu.tw>
+Date:   Thu Nov 7 17:17:59 2019 +0800
+
+    first commit

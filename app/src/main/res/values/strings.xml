@@ -1,0 +1,141 @@
+<resources>
+    <string name="app_name">iSleepBetter</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="Open">Open</string>
+    <string name="Close">Close</string>
+
+    <string name="ble_not_supported">BLE is not supported</string>
+    <string name="label_data">Data:</string>
+    <string name="label_device_address">Device address:</string>
+    <string name="label_state">State:</string>
+    <string name="no_data">No data</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="title_devices">BLE Device Scan</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
+
+    <string name="unknown_device">Unknown device</string>
+    <string name="unknown_characteristic">Unknown characteristic</string>
+    <string name="unknown_service">Unknown service</string>
+
+    <!-- Menu items -->
+    <string name="menu_connect">Connect</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="menu_scan">Scan</string>
+    <string name="menu_stop">Stop</string>
+    <string name="Edit_username">Edit username</string>
+    <string name="training_diary">Training diary</string>
+    <string name="logout">Logout</string>
+
+
+    <!--    greetings-->
+    <string name="Good_morning">早安，</string>
+    <string name="Good_afternoon">午安，</string>
+    <string name="Good_evening">晚上好，</string>
+    <string name="Good_night">晚安，</string>
+
+    <!--    calendar-->
+    <string name="confirm">確認</string>
+
+    <string name="cancel">取消</string>
+
+    <!--    common-->
+    <string name="hello">您好，</string>
+    <string name="no">次數</string>
+    <string name="time">時間</string>
+    <string name="strategy">策略</string>
+    <string name="Account">帳號：</string>
+    <string name="Password">密碼：</string>
+
+
+    <!--    LoginActivity-->
+    <string name="Login">登入</string>
+    <string name="login_blank">帳號密碼不可空白</string>
+    <string name="password_wrong">密碼錯誤，請重新輸入</string>
+    <string name="register_que">是否要註冊此帳號？</string>
+    <string name="register">註冊</string>
+    <string name="nft">神經回饋訓練</string>
+    <string name="nft_slogan_1"></string>
+
+    <!--    MainActivity-->
+    <string name="nft_slogan_2">透過訓練，有效改善睡眠品質</string>
+    <string name="nft_slogan_3"></string>
+    <string name="scoring">智慧睡眠分析</string><!--及-->
+    <string name="scoring_slogan_1">分析腦波，提供客觀睡眠品質</string><!--記憶訓練-->
+    <string name="alarm">智慧睡眠鬧鐘</string>
+    <string name="alarm_slogan_1">適當睡眠階段喚醒使用者，使其精神飽滿</string>
+    <string name="NFT_diary">訓練日記</string>
+    <string name="train">訓練</string>
+
+    <!--    NFTActivity-->
+    <string name="no_training_data">無訓練資料</string>
+    <string name="search">搜尋</string>
+
+    <!--    NFTMonthHistoryActivity-->
+    <string name="countdown_1"></string>
+
+    <!--    ConnectActivity-->
+    <string name="countdown_2"> 秒後開始</string>
+
+    <!--    DeviceControlActivity-->
+    <string name="other">其他</string>
+    <string name="train_result">今日訓練成果</string>
+    <string name="again">繼續</string>
+    <string name="finish">結束</string>
+
+    <!--    NFTdisplayActivity-->
+    <string name="other_strategy">其他策略 :</string>
+    <string name="stop_alarm">關閉</string>
+    <string name="Analysis">分析</string>
+
+    <!--    NFTStrategy_view-->
+    <string name="title_activity_main_fun">MainFunActivity</string>
+
+    <!--    NormalClockActivity-->
+    <string name="glasses_fun">疲勞姿勢偵測</string>
+
+    <!--sleeprecordActivity-->
+    <string name="headband_fun">小憩鬧鐘</string>
+    <string name="title_notifications">Notifications</string>
+    <string-array name="custom_weekdays">
+        <item>日</item>
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+    </string-array>
+    <string-array name="custom_months">
+        <item>一月</item>
+        <item>二月</item>
+        <item>三月</item>
+        <item>四月</item>
+        <item>五月</item>
+        <item>六月</item>
+        <item>七月</item>
+        <item>八月</item>
+        <item>九月</item>
+        <item>十月</item>
+        <item>十一月</item>
+        <item>十二月</item>
+    </string-array>
+    <string-array name="countdown">
+        <item>十</item>
+        <item>九</item>
+        <item>八</item>
+        <item>七</item>
+        <item>六</item>
+        <item>五</item>
+        <item>四</item>
+        <item>三</item>
+        <item>二</item>
+        <item>一</item>
+    </string-array>
+</resources>

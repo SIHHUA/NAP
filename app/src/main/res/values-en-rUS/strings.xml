@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!--    greetings-->
+    <string name="Good_morning">Good morning,</string>
+    <string name="Good_afternoon">Good afternoon,</string>
+    <string name="Good_evening">Good evening,</string>
+    <string name="Good_night">Good night,</string>
+
+<!--    calendar-->
+    <string-array name="custom_weekdays">
+        <item>Sun</item>
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wen</item>
+        <item>Thur</item>
+        <item>Fri</item>
+        <item>Sat</item>
+    </string-array>
+    <string-array name="custom_months">
+        <item>JAN</item>
+        <item>Feb</item>
+        <item>MARCH</item>
+        <item>April</item>
+        <item>MAY</item>
+        <item>June</item>
+        <item>JULY</item>
+        <item>Aug</item>
+        <item>SEPT</item>
+        <item>Oct</item>
+        <item>Nov</item>
+        <item>DEC</item>
+    </string-array>
+
+<!--    common-->
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="hello">Hello,</string>
+    <string name="no">No</string>
+    <string name="time">Time</string>
+    <string name="strategy">Strategy</string>
+
+
+
+<!--    LoginActivity-->
+    <string name="Account">Account:</string>
+    <string name="Password">Password:</string>
+    <string name="Login">Login</string>
+    <string name="login_blank">Account or password cannot be blank.</string>
+    <string name="password_wrong">The password is incorrect, please re-enter.</string>
+    <string name="register_que">Do you want to register this account?</string>
+    <string name="register">Register</string>
+
+<!--MainActivity-->
+    <string name="nft">Neurofeedback training</string>
+    <string name="nft_slogan_1">Effective sleep enhancement</string>
+    <string name="nft_slogan_2">\uff06</string>
+    <string name="nft_slogan_3">memory consolidation training</string>
+    <string name="scoring">AI Sleep scoring</string>
+    <string name="scoring_slogan_1">analyze sleep stages on-line</string>
+    <string name="alarm">Smart sleep alarm</string>
+    <string name="alarm_slogan_1">Effective nap sleep to prevent accident</string>
+
+<!--    NFTActivity-->
+    <string name="NFT_diary">Training diary</string>
+    <string name="train">Training</string>
+
+<!--    NFTMonthHistoryActivity-->
+    <string name="no_training_data">No training data</string>
+
+<!--    ConnectActivity-->
+    <string name="search">Search</string>
+
+<!--    DeviceControlActivity-->
+    <string name="other">other</string>
+    <string-array name="countdown">
+        <item>ten</item>
+        <item>nine</item>
+        <item>eight</item>
+        <item>seven</item>
+        <item>six</item>
+        <item>five</item>
+        <item>four</item>
+        <item>three</item>
+        <item>two</item>
+        <item>one</item>
+    </string-array>
+    <string name="countdown_1">Start after  </string>
+    <string name="countdown_2">  seconds</string>
+
+<!--    NFTdisplayActivity-->
+    <string name="train_result">Today\u0027s training result</string>
+    <string name="again">Again</string>
+    <string name="finish">Finish</string>
+
+<!--    NFTStrategy_view-->
+    <string name="other_strategy">Other strategy :</string>
+
+<!--    NormalClockActivity-->
+    <string name="stop_alarm">close</string>
+
+<!--sleeprecordActivity-->
+    <string name="Analysis">Analysis</string>
+</resources>

@@ -4,7 +4,6 @@ import android.app.Application;
 import android.media.MediaPlayer;
 
 public class GlobalVariable extends Application {
-
     private int hourOfDay;
     private int minute;
 

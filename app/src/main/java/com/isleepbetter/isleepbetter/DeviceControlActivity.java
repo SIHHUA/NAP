@@ -29,8 +29,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,7 +79,7 @@ import java.util.TimerTask;
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifImageView;
 
-public class DeviceControlActivity extends Activity {
+public class DeviceControlActivity extends AppCompatActivity {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
@@ -95,7 +97,7 @@ public class DeviceControlActivity extends Activity {
     private Boolean flag = false,alarm_flag = false;
 ;
     private Button start_alarm,stop_alarm;
-    private Integer set_hour,set_minute;
+    private String set_hour,set_minute;
     private static Ringtone ring;
     private TimePickerDialog timePickerDialog;
 
@@ -198,29 +200,9 @@ public class DeviceControlActivity extends Activity {
         mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
-//        start = (Button) findViewById(R.id.start_chart);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-//        start.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (mGattCharacteristics != null) {
-//                    //write 進入快閃
-//                    try {
-//                        Thread.sleep(1000); //1000為1秒
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    mBluetoothLeService.writeCharacteristic();
-//                    //notify 收資料
-//                    mBluetoothLeService.setCharacteristicNotification();
-//                    flag = true;
-//                }
-//                start.setEnabled(false);
-//            }
-//
-//        });
 
         start_alarm = findViewById(R.id.button6);
         start_alarm.setOnClickListener(new View.OnClickListener() {
@@ -357,8 +339,22 @@ public class DeviceControlActivity extends Activity {
         = new TimePickerDialog.OnTimeSetListener(){
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        set_hour = hourOfDay;
-        set_minute = minute;
+        if(hourOfDay<10)
+        {
+            set_hour = "0"+hourOfDay;
+        }
+        else
+        {
+            set_hour = hourOfDay+"";
+        }
+        if(minute<10)
+        {
+            set_minute = "0"+minute;
+        }
+        else
+        {
+            set_minute = minute+"";
+        }
     }};
 
 
@@ -381,13 +377,21 @@ public class DeviceControlActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(mServiceConnection);
-        mBluetoothLeService = null;
+        if(flag) {
+            unbindService(mServiceConnection);
+            mBluetoothLeService = null;
+        }
     }
 
     @Override
-    public void onBackPressed() {
-        moveTaskToBack(false);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(flag) {
+            unbindService(mServiceConnection);
+            mBluetoothLeService = null;
+        }
+        startActivity(new Intent(DeviceControlActivity.this, MainFunActivity.class));
+        finish();
+        return super.onKeyDown(keyCode, event);
     }
 
     private void updateConnectionState(final int resourceId) {
@@ -409,9 +413,14 @@ public class DeviceControlActivity extends Activity {
         String hour = time.split(":")[0];
         String minute = time.split(":")[1];
         String second_t = time.split(":")[2];
+        Log.d("ring_test",hour + "   "+minute + "   "+second_t+"\n");
+        Log.d("ring_test",set_hour + "   "+set_minute + "\n");
+        Log.d("ring_test",alarm_flag+"   "+hour.equals(String.valueOf(set_hour)) + "   "+minute.equals(String.valueOf(set_minute)) + "   "+second_t.equals("00")+"\n");
+
 
         if(alarm_flag && hour.equals(String.valueOf(set_hour)) && minute.equals(String.valueOf(set_minute)) && second_t.equals("00"))
         {
+            Log.d("ring_test","ringing\n");
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             ring = RingtoneManager.getRingtone(this.getApplicationContext(), notification);
             ring.setLooping(true);
@@ -615,7 +624,6 @@ public class DeviceControlActivity extends Activity {
                 else
                     return 0;
             }
-
         }
         else{
             if (feat[21] < 1.8613){
@@ -629,7 +637,6 @@ public class DeviceControlActivity extends Activity {
                 return 0;
             }
         }
-
     }
 
     public static int pred_stage_N3(double[] feat) {
@@ -642,13 +649,11 @@ public class DeviceControlActivity extends Activity {
                 }else{
                     return 1;
                 }
-
             }
 
         }else{
             return 1;
         }
-
     }
 
     public static double mean(double[] m) {

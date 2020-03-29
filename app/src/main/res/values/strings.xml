@@ -95,7 +95,7 @@
     <string name="Analysis">分析</string>
 
     <!--    NFTStrategy_view-->
-    <string name="title_activity_main_fun">MainFunActivity</string>
+    <string name="title_activity_main_fun">FPN</string>
 
     <!--    NormalClockActivity-->
     <string name="glasses_fun">疲勞姿勢偵測</string>

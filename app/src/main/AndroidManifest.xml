@@ -19,9 +19,9 @@
         <activity android:name=".NFTMonthHistoryActivity" />
         <activity android:name=".NFTHistoryActivity" />
         <activity
-            android:name=".DeviceControlActivity"
-            android:screenOrientation="landscape" />
-        <activity android:name=".ConnectActivity" />
+            android:name=".DeviceControlActivity" />
+        <activity android:name=".ConnectActivity"
+            android:label="@string/title_activity_main_fun"></activity>
         <activity android:name=".LogoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

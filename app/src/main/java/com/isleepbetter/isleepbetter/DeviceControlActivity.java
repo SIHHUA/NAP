@@ -1,7 +1,10 @@
 package com.isleepbetter.isleepbetter;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
@@ -17,23 +20,36 @@ import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -44,66 +60,70 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
 public class DeviceControlActivity extends Activity {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
-
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-
-    private LineChart line_chart;
-    private HorizontalBarChart bar_chart;
-    private Boolean flag = true;
-    private Button start, stop, test;
-    private int count = 1, times = 0;
-    private List<Entry> entries2 = new ArrayList<>();
-    private String save_score = "";
-    private Float score, avg_score = 0.0f, total_score = 0.0f;
-    private Integer count_num;
-    private Handler handler;
-    private Boolean check_channel = true;
-    private Integer training_time = 370;
-//    private List<String> countdown_str = new ArrayList<>();
-
-    private RadioGroup radiogroup;
-    private TextView score_text,strategy_txt;
-    private Button done;
-    private String id,strategy_text;
-    private EditText strategy;
-    private List<String> strategy_list = new ArrayList<>();
-
-
-    private SQLiteDatabase db;
-    private MyDBHelper dbHelper;
-
-    private TextView mConnectionState, countdown;
-    private TextView mDataField;
-    private String mDeviceName;
-    private String mDeviceAddress;
-    private ExpandableListView mGattServicesList;
-    private BluetoothLeService mBluetoothLeService;
-    private BluetoothGatt mBluetoothGatt;
-    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
-            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    private boolean mConnected = false;
-    private BluetoothGattCharacteristic mNotifyCharacteristic;
-
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
-    private String a[],countdown_str;
-    private AlertDialog dialog;
+    private TextView mConnectionState,mDataField;
+    private String mDeviceName,mDeviceAddress;
+    private ExpandableListView mGattServicesList;
+    private BluetoothLeService mBluetoothLeService;
+    private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics =
+            new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
 
-    private ImageView battery_img;
-    private TextView battery_txt;
+    private boolean mConnected = false;
+    private Boolean flag = false,alarm_flag = false;
+;
+    private Button start_alarm,stop_alarm;
+    private Integer set_hour,set_minute;
+    private static Ringtone ring;
+    private TimePickerDialog timePickerDialog;
+
+    private BarChart bar_chart;
+    private List<String> ylabel = new ArrayList<>(Arrays.asList("", "Deep", "Light", "Wake"));
+    private ArrayList<BarEntry> entries2 = new ArrayList<>();
+    private List<Integer> data = new ArrayList<>(Arrays.asList(0,0,0,0,0,1,1,2,2,3,3,3,3,3,3,3,3));
+    private List<Integer> color = new ArrayList<>();
+    private int Window = 10;
+
+    private Switch switch_btn;
+    private ImageView people_img,clock_img;
+    private GifImageView people_gif,clock_gif;
+
+    private String ble_data; //ble data catch from handband
+    private double [][] second_feature=new double[12][30]; //matrix to save data in 30 second
+    private double [] epoch_feature=new double[24]; // matrix to predict stage
+    private double [] feat_array1 =new double[24],feat_array2 =new double[24];
+    private int second=0;   //0~29 count second
+    private int stage=0;    //result
+    private int epoch_count=0;  //current epoch num
+    private int alarm_count=0;  //if value higher than 20 set alarm on
+    private boolean system_on =true;//is ble on or not
+    private  boolean alarm_on =false; //set alarm on or not
+
+    private Timer timer;
+    private Integer index;
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -131,14 +151,14 @@ public class DeviceControlActivity extends Activity {
     // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
     //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @RequiresApi(api = Build.VERSION_CODES.P)
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, @NonNull Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnected = true;
                 updateConnectionState(R.string.connected);
                 Log.d("conect_status","connect");
-                start.setVisibility(Button.VISIBLE);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
@@ -165,10 +185,7 @@ public class DeviceControlActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_control);
 
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        dbHelper = new MyDBHelper(this);
-        db = dbHelper.getWritableDatabase(); // 開啟資料庫
+        init();
 
         final Intent intent = getIntent();
         mDeviceName = getSharedPreferences("name", MODE_PRIVATE)
@@ -181,74 +198,169 @@ public class DeviceControlActivity extends Activity {
         mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
-        start = (Button) findViewById(R.id.start_chart);
-        line_chart = (LineChart) findViewById(R.id.line_chart);
-        bar_chart = (HorizontalBarChart) findViewById(R.id.bar_chart);
+//        start = (Button) findViewById(R.id.start_chart);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-        start.setOnClickListener(new View.OnClickListener() {
+//        start.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (mGattCharacteristics != null) {
+//                    //write 進入快閃
+//                    try {
+//                        Thread.sleep(1000); //1000為1秒
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    mBluetoothLeService.writeCharacteristic();
+//                    //notify 收資料
+//                    mBluetoothLeService.setCharacteristicNotification();
+//                    flag = true;
+//                }
+//                start.setEnabled(false);
+//            }
+//
+//        });
+
+        start_alarm = findViewById(R.id.button6);
+        start_alarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                flag = true;
-
-                Log.d("channel_status",check_channel+"");
-                if (mGattCharacteristics != null) {
-                    //write 進入快閃
-
-                    try {
-                        Thread.sleep(1000); //1000為1秒
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                openTimePickerDialog(false);
+                alarm_flag = true;
+                if(!flag) {
+                    if (mGattCharacteristics != null) {
+                        //write 進入快閃
+                        try {
+                            Thread.sleep(1000); //1000為1秒
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        mBluetoothLeService.writeCharacteristic();
+                        //notify 收資料
+                        mBluetoothLeService.setCharacteristicNotification();
+                        flag = true;
                     }
-                    mBluetoothLeService.writeCharacteristic();
-
-
-                    //notify 收資料
-                    mBluetoothLeService.setCharacteristicNotification();
                 }
-                start.setVisibility(Button.INVISIBLE);
+                people_img.setVisibility(View.INVISIBLE);
+                people_gif.setVisibility(View.VISIBLE);
 
             }
-
         });
 
-        start.setVisibility(Button.INVISIBLE);
+        stop_alarm = findViewById(R.id.button7);
+        stop_alarm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ring.stop();
+                alarm_flag = false;
+                flag = false;
+                unbindService(mServiceConnection);
+                mBluetoothLeService = null;
+                people_gif.setVisibility(View.INVISIBLE);
+                people_img.setVisibility(View.VISIBLE);
+                clock_img.setVisibility(View.VISIBLE);
+                clock_gif.setVisibility(View.INVISIBLE);
+            }
+        });
 
-        battery_img = findViewById(R.id.battery_img);
-        battery_txt = findViewById(R.id.battery_txt);
+        switch_btn = findViewById(R.id.switch1);
+        switch_btn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked)
+                {
+                    people_img.setImageResource(R.drawable.girl_wake);
+                    people_gif.setImageResource(R.drawable.girl_sleep);
+                }
+                else
+                {
+                    people_img.setImageResource(R.drawable.boy_wake);
+                    people_gif.setImageResource(R.drawable.boy_sleep);
+                }
+            }
+        });
 
-        // bar_chart configuration
-        bar_chart.setDrawBarShadow(true);
-        bar_chart.getAxisRight().setAxisMinValue(0.0f); // set x-axis min-value and max-value
-        bar_chart.getAxisRight().setAxisMaximum(100.0f);
-        bar_chart.getAxisLeft().setAxisMinValue(0.0f);
-        bar_chart.getAxisLeft().setAxisMaximum(100.0f);
-        bar_chart.getAxisLeft().setEnabled(false);
-        bar_chart.getAxisRight().setEnabled(false);
-        bar_chart.getDescription().setEnabled(false); // disable description right-down
-        bar_chart.getLegend().setEnabled(false); // disable description left-down
-        bar_chart.getXAxis().setEnabled(false);
-        bar_chart.setTouchEnabled(false);
-        // bar_chart configuration end
+        index = 0;
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                DeviceControlActivity.this.runOnUiThread(new Runnable() {
 
-        // line_chart configuration
-        line_chart.getAxisRight().setAxisMinValue(0.0f); // set x-axis min-value and max-value
-        line_chart.getAxisRight().setAxisMaximum(100.0f);
-        line_chart.getAxisRight().setEnabled(false);
-        line_chart.getAxisLeft().setAxisMinValue(0.0f);
-        line_chart.getAxisLeft().setAxisMaximum(100.0f);
-        line_chart.getDescription().setEnabled(false);// disable description right-down
-        line_chart.getLegend().setEnabled(false); // disable description left-down
-        XAxis line_xAxis = line_chart.getXAxis();
-        line_xAxis.setAxisMinimum(0.0f);
-        line_xAxis.setAxisMaximum(360.0f);
-        line_chart.getAxisLeft().setEnabled(false);
-        line_chart.getAxisRight().setEnabled(false);
-        line_xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        line_chart.setTouchEnabled(false);
-        // line_chart configuration end
+                    @Override
+                    public void run() {
+                        get_data(index, data.get(index));
+                        index++;
+                        if(index==data.size())
+                        {
+                            timer.cancel();
+                        }
+                    }
+                });
+
+            }
+        }, 0,1000);
     }
+
+    private void init()
+    {
+        people_img = findViewById(R.id.imageView7);
+        clock_img = findViewById(R.id.imageView8);
+        people_gif = findViewById(R.id.activity_gif_giv);
+        clock_gif = findViewById(R.id.activity_gif_giv1);
+        people_img.setImageResource(R.drawable.boy_wake);
+        people_gif.setImageResource(R.drawable.boy_sleep);
+
+        bar_chart = findViewById(R.id.bar_chart);
+        bar_chart.getAxisRight().setAxisMinValue(0); // set x-axis min-value and max-value
+        bar_chart.getAxisRight().setAxisMaximum(4);
+        bar_chart.getAxisRight().setEnabled(false);
+        bar_chart.getAxisLeft().setAxisMinValue(0);
+        bar_chart.getAxisLeft().setAxisMaximum(3);
+        bar_chart.getAxisLeft().setAxisMinimum(0);
+        bar_chart.getAxisLeft().setLabelCount(3);
+        bar_chart.getAxisLeft().setDrawGridLines(false);
+        bar_chart.getAxisRight().setDrawGridLines(false);
+        bar_chart.getXAxis().setDrawGridLines(false);
+        bar_chart.getXAxis().setEnabled(false);
+        bar_chart.getDescription().setEnabled(false);// disable description right-down
+        bar_chart.getLegend().setEnabled(false); // disable description left-down
+        bar_chart.setTouchEnabled(false);
+
+        XAxis bar_xAxis = bar_chart.getXAxis();
+        bar_xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        ValueFormatter formatter = new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                return ylabel.get((int) value);
+            }
+        };
+        bar_chart.getAxisLeft().setValueFormatter(formatter);
+        CustomBarChartRender barChartRender = new CustomBarChartRender(bar_chart,bar_chart.getAnimator(), bar_chart.getViewPortHandler());
+        barChartRender.setRadius(10);
+        bar_chart.setRenderer(barChartRender);
+    }
+
+    private void openTimePickerDialog(boolean is24r){
+        Calendar calendar = Calendar.getInstance();
+        timePickerDialog = new TimePickerDialog(
+                DeviceControlActivity.this,
+                onTimeSetListener,
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                is24r);
+        timePickerDialog.show();
+    }
+
+    TimePickerDialog.OnTimeSetListener onTimeSetListener
+        = new TimePickerDialog.OnTimeSetListener(){
+    @Override
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        set_hour = hourOfDay;
+        set_minute = minute;
+    }};
+
 
     @Override
     protected void onResume() {
@@ -271,7 +383,6 @@ public class DeviceControlActivity extends Activity {
         super.onDestroy();
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
-        dialog.dismiss();
     }
 
     @Override
@@ -288,212 +399,77 @@ public class DeviceControlActivity extends Activity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     private void displayData(String nft_data) {
         Log.d("testdata",nft_data);
-//        if (!nft_data.equals(""))
-//        {
-//            String[] data1 = nft_data.split(",");
-//            Log.d("testdata",data1[0]+"   666   "+data1[1]);
-//        }
 
+        Calendar mCal = Calendar.getInstance();
+        CharSequence s = DateFormat.format("kk:mm:ss", mCal.getTime());    // kk:24小時制, hh:12小時制
+        String time = s.toString();
+        String hour = time.split(":")[0];
+        String minute = time.split(":")[1];
+        String second_t = time.split(":")[2];
 
+        if(alarm_flag && hour.equals(String.valueOf(set_hour)) && minute.equals(String.valueOf(set_minute)) && second_t.equals("00"))
+        {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            ring = RingtoneManager.getRingtone(this.getApplicationContext(), notification);
+            ring.setLooping(true);
+            ring.play();
+            clock_img.setVisibility(View.INVISIBLE);
+            clock_gif.setVisibility(View.VISIBLE);
+        }
 
-
-        if (!nft_data.equals("")) {
-            battery_txt.setVisibility(TextView.VISIBLE);
-            String[] data = nft_data.split(",");
-            mDataField.setText(data[0]);
-            Log.d("testdata",data[0]+"      "+data[1]+(Float.parseFloat(data[1])/4.2)*100);
-            if(flag) {
-                if(Float.parseFloat(data[1]) > 3.6) // green
-                {
-                    battery_img.setImageResource(R.drawable.full_battery);
-                    battery_txt.setText((Float.parseFloat(data[1])/4.2)*100 + "");
-                }
-                else if(Float.parseFloat(data[1]) < 3.5) // red
-                {
-                    battery_img.setImageResource(R.drawable.low_battery);
-                    battery_txt.setText((Float.parseFloat(data[1])/4.2)*100 + "");
-                }
-                else // orange
-                {
-                    battery_img.setImageResource(R.drawable.medium_battery);
-                    battery_txt.setText((Float.parseFloat(data[1])/4.2)*100 + "");
-                }
-                Integer battery_power = (int)((Float.parseFloat(data[1])/4.2)*100);
-                if (battery_power > 100)
-                {
-                    battery_txt.setText("100%");
-                }
-                else
-                {
-                    battery_txt.setText(battery_power + "%");
-                    Log.d("testdata",battery_power + "%");
-                }
-                if (!nft_data.isEmpty() && times < training_time) {
-                    score = Float.parseFloat(data[0]);
-                    get_data();
-                    if (times > 9) {
-                        String tmp  =String.valueOf(times-9) +","+ Float.toString(score) + "\n";
-                        save_score = save_score + tmp;
-                        total_score = (total_score + score);
-                    }
-                    times = times + 1;
-                } else if (times == training_time) {
-                    mBluetoothLeService.writeStopCharacteristic();
-                    avg_score = (total_score / (training_time-10));
-                    times++;
-                    AlertDialog.Builder builder = new AlertDialog.Builder(DeviceControlActivity.this);
-                    LayoutInflater inflater = getLayoutInflater();
-                    final View dialogView = inflater.inflate(R.layout.view_nft_strategy, null);
-
-                    radiogroup = dialogView.findViewById(R.id.radioGroup);
-                    score_text = dialogView.findViewById(R.id.score);
-                    strategy_txt = dialogView.findViewById(R.id.textView21);
-                    strategy = dialogView.findViewById(R.id.strategy);
-                    score_text.setText(avg_score.toString());
-
-                    id = getSharedPreferences("name", MODE_PRIVATE)
-                                    .getString("id", "");
-
-                    Cursor c=db.rawQuery("SELECT * FROM data where id = '"+id + "'  GROUP BY strategy",null);
-                    c.moveToFirst();
-                    int i = 0;
-                    if(c.getCount() == 0)
-                    {
-                        strategy_list.add(getResources().getString(R.string.other));
-                        //radioButton
-                        RadioButton radioButton = new RadioButton(getApplicationContext());
-                        radioButton.setPadding(100,0,0,0);
-                        radioButton.setText(getResources().getString(R.string.other));
-                        radioButton.setTextColor(Color.rgb(0,0,0));
-                        //必须有ID，否则默认选中的选项会一直是选中状态
-                        radioButton.setId(i);
-                        radioButton.setChecked(true);
-                        //layoutParams 设置margin值
-                        RadioGroup.LayoutParams layoutParams = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT);
-                        if (i!=0){
-                            layoutParams.setMargins(50,0,0,0);
-                        }else {
-                            layoutParams.setMargins(50,0,0,0);
-                        }
-                        //注意这里addView()里传入layoutParams
-                        radiogroup.addView(radioButton,layoutParams);
-                    }
-                    else
-                    {
-                        int fail = 0;
-                        for (i = 0; i < c.getCount() + 1; i++) {
-                            int check = 0;
-                            RadioButton radioButton = new RadioButton(getApplicationContext());
-                            if(i == c.getCount())
-                            {
-                                strategy_list.add(getResources().getString(R.string.other));
-                                radioButton.setText(getResources().getString(R.string.other));
-                                radioButton.setChecked(true);
-                                check =1;
-                            }
-                            else if(!c.getString(3).equals("")){
-
-                                strategy_list.add(c.getString(3).toString());
-                                radioButton.setText(c.getString(3));
-                                check =1;
-
-                            }
-                            else
-                                fail = fail+1;
-                            if(check == 1) {
-                                //radioButton
-                                radioButton.setPadding(100, 0, 0, 0);
-                                radioButton.setTextColor(Color.rgb(0, 0, 0));
-                                //必须有ID，否则默认选中的选项会一直是选中状态
-                                radioButton.setId(i-fail);
-
-                                //layoutParams 设置margin值
-                                RadioGroup.LayoutParams layoutParams = new RadioGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                        ViewGroup.LayoutParams.WRAP_CONTENT);
-                                if (i != 0) {
-                                    layoutParams.setMargins(50, 0, 0, 0);
-                                } else {
-                                    layoutParams.setMargins(50, 0, 0, 0);
-                                }
-                                //注意这里addView()里传入layoutParams
-                                radiogroup.addView(radioButton, layoutParams);
-                            }
-                            c.moveToNext();
-
-                        }
-                    }
-                    builder.setView(dialogView);
-                    builder.setCancelable(false);
-                    dialog = builder.create();
-                    dialog.show();
-
-//                    builder.create();
-//                    builder.show();
-
-                    radiogroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(RadioGroup radioGroup, int i) {
-
-                            if(strategy_list.get(i).equals(getResources().getString(R.string.other)))
-                            {
-                                strategy_txt.setVisibility(TextView.VISIBLE);
-                                strategy.setVisibility(EditText.VISIBLE);
-                            }
-                            else{
-                                strategy_txt.setVisibility(TextView.INVISIBLE);
-                                strategy.setVisibility(EditText.INVISIBLE);
-                            }
-                        }
-                    });
-
-                    done = dialogView.findViewById(R.id.done);
-                    done.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-                            Date date = new Date();
-                            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-                            Date time = new Date();
-
-                            if(strategy_txt.getVisibility() == TextView.VISIBLE){
-                                strategy_text = strategy.getText().toString();
-                            }
-                            else
-                            {
-                                strategy_text = strategy_list.get(radiogroup.getCheckedRadioButtonId());
-                            }
-
-                            //存入資料庫
-                            ContentValues values = new ContentValues();
-                            values.put("id", id);
-                            values.put("date", dateFormat.format(date));
-                            values.put("time", timeFormat.format(time));
-                            values.put("strategy", strategy_text);
-                            values.put("avg_score", avg_score);
-                            Log.d("strategy_t",strategy_text+ "   "+avg_score);
-                            db.insert("data", null, values);
-                            mBluetoothLeService.disconnect();
-
-                            //寫入手機
-                            SimpleDateFormat dateFormat_1 = new SimpleDateFormat("yyyyMMddHHmmss");
-                            Date day = new Date();
-                            String filename = id+"_"+dateFormat_1.format(day)+".txt";
-                            File dir = getApplicationContext().getFilesDir();
-                            save_score = strategy_text + '\n' + avg_score + '\n' + save_score;
-                            File outFile = new File(dir, filename);
-                            writeToFile(outFile, save_score);
-
-                            startActivity(new Intent(DeviceControlActivity.this, NFTdisplayActivity.class));
-                            finish();
-                        }
-                    });
+        if (!nft_data.equals("") && flag && false) {
+            epoch_count++;
+            /////////////////////////////////////
+            //catch ble data per second
+            String [] str_feature=ble_data.split(",");
+            double TP1= Double.valueOf(str_feature[5]);
+            double TP2= Double.valueOf(str_feature[12]);
+            for (int sub=0 ; sub<6 ;++ sub){
+                second_feature[sub][second]=Double.valueOf(str_feature[sub+1]);
+                second_feature[6+sub][second]=Double.valueOf(str_feature[sub+8]);
+                if (sub != 4){
+                    second_feature[sub][second]   /=TP1;
+                    second_feature[6+sub][second] /=TP2;
                 }
             }
+            ///////////////////////////////////////////
+            //if count to 30 second go to transfrom second feature data into epoch feature data
+            if (second<29){
+                ++second;
+            }
+            else{
+                second=0;
+                for (int featnum=0;featnum<6;++featnum){
+                    feat_array1=second_feature[featnum];
+                    feat_array2=second_feature[featnum+6];
+                    epoch_feature[4*(featnum)-4]=mean(feat_array1);
+                    epoch_feature[4*(featnum)-3]=calculateSD(feat_array1);
+                    epoch_feature[4*(featnum)-2]=mean(feat_array2);
+                    epoch_feature[4*(featnum)-1]=calculateSD(feat_array2);
+                }
+                /////////////////////////////////////////
+                //pred stage 0->wake 1->light sleep 3->deep sleep
+                stage=pred_stage_W(epoch_feature);
+                if (stage==1){
+                    stage=pred_stage_N3(epoch_feature);
+                    ++alarm_count;
+                    if ((stage==3 && epoch_count>=20) || alarm_count>=20){
+                        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                        ring = RingtoneManager.getRingtone(this.getApplicationContext(), notification);
+                        ring.setLooping(true);
+                        ring.play();
+                        clock_img.setVisibility(View.INVISIBLE);
+                        clock_gif.setVisibility(View.VISIBLE);
+                    }
+                }else{
+                    alarm_count=0;
+                }
+            }
+
         }
-        Log.d("testdata","err");
 
     }
 
@@ -563,63 +539,6 @@ public class DeviceControlActivity extends Activity {
         return intentFilter;
     }
 
-    public void get_data() {
-        countdown = findViewById(R.id.countdown);
-        line_chart.clear();
-        bar_chart.clear();
-        a = getResources().getStringArray(R.array.countdown);
-
-        runOnUiThread(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                count_num = times;
-                if (count_num < 10)  //倒數
-                {
-                    countdown_str = a[count_num];
-                    countdown.setVisibility(TextView.VISIBLE);
-                    List<BarEntry> entries = new ArrayList<>();
-                    countdown.setText(getResources().getString(R.string.countdown_1)+" "+countdown_str+" "+getResources().getString(R.string.countdown_2));
-                    entries.add(new BarEntry(0f, 100 - (count_num * 10)));
-                    Log.d("score", count_num + "   " + (10 - count_num) + "    " + (100 - (count_num * 10)) + "");
-                    BarDataSet set = new BarDataSet(entries, "BarDataSet");
-                    set.setColor(Color.rgb(253, 201, 203));
-                    set.setBarShadowColor(Color.rgb(187, 213, 236));
-                    set.setDrawValues(false);
-                    BarData data = new BarData(set);
-                    data.setBarWidth(1.0f);
-                    bar_chart.setData(data);
-                    bar_chart.invalidate();
-                } else {
-                    countdown.setVisibility(TextView.INVISIBLE);
-                    line_chart.setVisibility(Chart.VISIBLE);
-                    //get data and set data here --- barchart
-                    List<BarEntry> entries = new ArrayList<>();
-                    entries.add(new BarEntry(0f, score));
-                    BarDataSet set = new BarDataSet(entries, "BarDataSet");
-                    set.setColor(Color.rgb(253, 201, 203));
-                    set.setBarShadowColor(Color.rgb(187, 213, 236));
-                    set.setDrawValues(false);
-                    BarData data = new BarData(set);
-                    data.setBarWidth(1.0f);
-                    bar_chart.setData(data);
-                    bar_chart.invalidate();
-                    //end
-
-                    // update linechart
-                    entries2.add(new Entry(times - 10, score));
-                    LineDataSet dataSet = new LineDataSet(entries2, "");
-                    LineData lineData = new LineData(dataSet);
-                    dataSet.setDrawCircles(false); // disable point(circle)
-                    dataSet.setDrawValues(false); // disable value display
-                    line_chart.setData(lineData);
-                    line_chart.invalidate(); // refresh
-
-
-                }
-
-            }
-        }));
-    }
 
     private void writeToFile(File fout, String data) {
         FileOutputStream osw = null;
@@ -638,5 +557,119 @@ public class DeviceControlActivity extends Activity {
         }
     }
 
+    public void get_data(final Integer index, final Integer data) {
 
+        bar_chart.clear();
+
+        runOnUiThread(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // update linechart
+                switch (data) {
+                    case 0:
+                        color.add(Color.rgb(168,230,250));
+                        entries2.add(new BarEntry( index, 3));
+                        break;
+                    case 1:
+                        color.add(Color.rgb(250,219,216));
+                        entries2.add(new BarEntry( index, 2));
+                        break;
+                    case 2:
+                        color.add(Color.rgb(250,219,216));
+                        entries2.add(new BarEntry( index, 2));
+                        break;
+                    case 3:
+                        color.add(Color.rgb(252, 243, 207));
+                        entries2.add(new BarEntry( index, 1));
+                        break;
+                    default:
+                        break;
+                }
+                if(entries2.size() > Window) {
+                    entries2.remove(0);
+                    color.remove(0);
+                }
+                BarDataSet dataSet = new BarDataSet(entries2, "");
+                dataSet.setDrawValues(false); // disable value display
+                BarData lineData = new BarData(dataSet);
+                lineData.setBarWidth(0.9f);
+                dataSet.setColors(color);
+
+                bar_chart.setData(lineData);
+                bar_chart.notifyDataSetChanged(); // let the chart know it's data changed
+                bar_chart.invalidate(); // refresh
+
+            }
+        }));
+    }
+
+
+    public static int pred_stage_W(double[] feat) {
+        if (feat[0] < 0.277887){
+            if (feat[23] < 0.785843){
+                return 0;
+            }
+            else{
+                if (feat[16] <50.9515)
+                    return 1;
+                else
+                    return 0;
+            }
+
+        }
+        else{
+            if (feat[21] < 1.8613){
+                if(feat[10]<0.263237){
+                    return 1;
+                }else{
+                    return 0;
+                }
+
+            }else{
+                return 0;
+            }
+        }
+
+    }
+
+    public static int pred_stage_N3(double[] feat) {
+        if (feat[20] < 8.53719){
+            if (feat[9] < 0.0471531){
+                return 3;
+            }else{
+                if (feat[12] <0.068237){
+                    return 3;
+                }else{
+                    return 1;
+                }
+
+            }
+
+        }else{
+            return 1;
+        }
+
+    }
+
+    public static double mean(double[] m) {
+        double sum = 0;
+        for (int i = 0; i < m.length; i++) {
+            sum += m[i];
+        }
+        return sum / m.length;
+    }
+
+
+    public static double calculateSD(double numArray[]){
+        double sum = 0.0, standardDeviation = 0.0;
+        int length = numArray.length;
+        for(double num : numArray) {
+            sum += num;
+        }
+        double mean = sum/length;
+        for(double num: numArray) {
+            standardDeviation += Math.pow(num - mean, 2);
+        }
+        return Math.sqrt(standardDeviation/length);
+    }
 }

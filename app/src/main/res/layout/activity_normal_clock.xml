@@ -24,7 +24,7 @@
         android:layout_width="237dp"
         android:layout_height="204dp"
         android:src="@drawable/sleeping"
-        app:layout_constraintBottom_toTopOf="@+id/line_chart"
+        app:layout_constraintBottom_toTopOf="@+id/bar_chart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -45,7 +45,7 @@
         app:layout_constraintGuide_percent="0.8" />
 
     <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/line_chart"
+        android:id="@+id/bar_chart"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:visibility="visible"

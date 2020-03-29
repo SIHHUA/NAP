@@ -32,7 +32,6 @@ import java.util.ArrayList;
 public class ConnectActivity extends AppCompatActivity {
     private static String TAG = "ConnectActivity";
     private BluetoothAdapter mBluetoothAdapter;
-    private LeDeviceListAdapter mLeDeviceListAdapter;
     private static final long SCAN_PERIOD = 10000;
     private static final int REQUEST_ENABLE_BT = 1;
     private boolean mScanning,permission;
@@ -45,7 +44,6 @@ public class ConnectActivity extends AppCompatActivity {
     private static final int LOCATION_REQUEST_CODE = 2;
     private Integer status;
 
-    private Button demo;
     private Intent intent = null;
 
     @Override
@@ -57,15 +55,6 @@ public class ConnectActivity extends AppCompatActivity {
         ble_list = findViewById(R.id.ble_list);
         ble_address = new ArrayList<BluetoothDevice>();
         ble_name = new ArrayList<String>();
-
-        demo = findViewById(R.id.Demo);
-        demo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(ConnectActivity.this, DemoNFTActivity.class));
-                finish();
-            }
-        });
 
         mHandler = new Handler();
         scannedAddressAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, ble_name);
@@ -109,54 +98,14 @@ public class ConnectActivity extends AppCompatActivity {
          status = getSharedPreferences("name", MODE_PRIVATE)
                 .getInt("status", 0);
 
-        if(status == 1 || status ==3) {
-            demo.setVisibility(Button.INVISIBLE);
-            Log.d("demo","1");
-        }
-//        else if(status == 2)
-//        {
-//            intent = new Intent(ConnectActivity.this,  DeviceControlActivity.class);
-//            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-//            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-//
-//            SharedPreferences pref = getSharedPreferences("name", MODE_PRIVATE);
-//            pref.edit()
-//                    .putString("device_name", device.getName())
-//                    .commit();
-//            pref.edit()
-//                    .putString("device_address", device.getAddress())
-//                    .commit();
-//        }
-//        else if(status == 3)
-//            intent = new Intent(ConnectActivity.this,  SleepDataActivity.class);
-
-
         ble_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final BluetoothDevice device = ble_address.get(position);
                 Log.d("test", device+" ");
                 if (device == null) return;
-//                final Intent intent = new Intent(ConnectActivity.this, DeviceControlActivity.class);
-//                // Log.d("test1",device.getName());
-//                intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
-//                intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
-//
-//                SharedPreferences pref = getSharedPreferences("name", MODE_PRIVATE);
-//                pref.edit()
-//                        .putString("device_name", device.getName())
-//                        .commit();
-//                pref.edit()
-//                        .putString("device_address", device.getAddress())
-//                        .commit();
 
-//                Integer status = getSharedPreferences("name", MODE_PRIVATE)
-//                        .getInt("status", 0);
 
-                if(status == 1)
-                    intent = new Intent(ConnectActivity.this, NormalClockActivity.class);
-                else if(status == 2)
-                {
                     intent = new Intent(ConnectActivity.this,  DeviceControlActivity.class);
                     intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, device.getName());
                     intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, device.getAddress());
@@ -171,10 +120,6 @@ public class ConnectActivity extends AppCompatActivity {
                     pref.edit()
                             .putInt("device_connect_status", 0)
                             .commit();
-                }
-                else if(status == 3)
-                    intent = new Intent(ConnectActivity.this,  SleepDataActivity.class);
-                // Log.d("test1",device.getName());
 
 
                 if (mScanning) {
@@ -289,10 +234,6 @@ public class ConnectActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-//                            Log.d("test", device.getName()+"");
-//                            mLeDeviceListAdapter.addDevice(device);
-//                            mLeDeviceListAdapter.notifyDataSetChanged();
-//                            ble_address.add(device);
                             if(device.getName()!=null){
                                 if(!ble_address.contains(device)){
                                     Log.d("t1", device+"   " + device.getAddress()+"   " + device.getName());
